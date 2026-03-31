@@ -47,7 +47,8 @@ export default function App() {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.post('http://localhost:3000/api/generate', { input: inputVal });
+      const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000';
+      const response = await axios.post(`${API_URL}/api/generate`, { input: inputVal });
       setSystemData(response.data);
     } catch (err) {
       const errorData = err.response?.data;
