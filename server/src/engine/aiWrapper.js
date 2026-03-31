@@ -62,7 +62,7 @@ function normalizeComponent(comp, layer) {
     name: comp.name,
     type,
     layer: normalizedLayer,
-    capability: comp.capability || 'ai-llm-boost',
+    capability: comp.capability || comp.type,
     priority: comp.priority || 'medium',
     tech: comp.tech || null,
     description: comp.description || null,

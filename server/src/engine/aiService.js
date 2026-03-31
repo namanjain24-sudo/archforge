@@ -51,14 +51,14 @@ function logFallback(from, to) {
 const SYSTEM_PROMPT = `You are a Senior Distributed Systems Architect.
 
 STRICT RULES:
-- You MUST ONLY enhance the given architecture
-- Do NOT invent unrealistic components
-- Do NOT modify valid existing structure
-- ONLY add missing production-grade components like queues, caches, gateways, observability, and resilience infrastructure
-- No UI → DB direct connections are allowed
-- No UI → Queue direct connections are allowed
-- Prefer async (queues + workers) for heavy write workloads
-- Every component MUST have: id, name, type, layer
+- You MUST ONLY enhance the given architecture IF it makes sense for the application's scale.
+- If the user request implies a simple or basic application (like a "Todo App"), keep the architecture simple. DO NOT force FAANG-grade or complex components (queues, caches, gateways) unless specifically needed.
+- Do NOT invent unrealistic components.
+- Do NOT modify valid existing structure.
+- When you add components, you MUST provide a meaningful 'capability' field (e.g., 'caching', 'api-gateway', 'queue'). NEVER use 'ai-llm-boost'.
+- No UI → DB direct connections are allowed.
+- Prefer async (queues + workers) ONLY for heavy write workloads.
+- Every component MUST have: id, name, type, layer, capability
 - Valid types: service, database, cache, queue, worker, external, ui
 - Valid layers: interaction, processing, data, integration
 - Output MUST be strict JSON only — no markdown, no explanations
@@ -66,7 +66,7 @@ STRICT RULES:
 RETURN FORMAT:
 {
   "components": {
-    "interaction": [{ "id": "...", "name": "...", "type": "service", "layer": "interaction" }],
+    "interaction": [{ "id": "...", "name": "...", "type": "service", "layer": "interaction", "capability": "api-gateway" }],
     "processing": [],
     "data": [],
     "integration": []
@@ -489,23 +489,16 @@ async function callOllama(input, systemData) {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// LLM LAYER 0: GROQ (Ultra-fast inference — OpenAI-compatible API)
+// LLM LAYER 0: GENERIC OPENAI-COMPATIBLE CALLER
 // ═══════════════════════════════════════════════════════════════
 
-const GROQ_TIMEOUT_MS = 5000;
-
-/**
- * Calls Groq's OpenAI-compatible chat completions API.
- * Groq provides sub-second inference on open-source models.
- */
-function callGroq(input, systemData) {
+async function callGenericOpenAI(provider, hostname, path, apiKeyEnv, modelEnv, defaultModel, input, systemData) {
   return new Promise((resolve, reject) => {
-    if (!process.env.GROQ_API_KEY) {
-      return reject(new Error('GROQ_API_KEY_MISSING'));
+    if (!process.env[apiKeyEnv]) {
+      return reject(new Error(`${apiKeyEnv}_MISSING`));
     }
 
-    const model = process.env.GROQ_MODEL || 'llama-3.1-70b-versatile';
-
+    const model = process.env[modelEnv] || defaultModel;
     const payload = JSON.stringify({
       model,
       messages: [
@@ -521,125 +514,88 @@ function callGroq(input, systemData) {
     });
 
     const options = {
-      hostname: 'api.groq.com',
-      path: '/openai/v1/chat/completions',
+      hostname,
+      path,
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.GROQ_API_KEY}`,
+        'Authorization': `Bearer ${process.env[apiKeyEnv]}`,
         'Content-Length': Buffer.byteLength(payload)
       },
-      timeout: GROQ_TIMEOUT_MS
+      timeout: 5000
     };
 
-    logInfo('Groq', `Calling model: ${model}`);
+    logInfo(provider, `Calling model: ${model}`);
 
     const req = https.request(options, (res) => {
       let data = '';
       res.on('data', (chunk) => data += chunk);
       res.on('end', () => {
-        if (res.statusCode === 429) {
-          const retryAfter = res.headers['retry-after'];
-          const err = new Error('GROQ_RATE_LIMITED_429');
-          err.retryable = true;
-          err.retryAfterMs = retryAfter ? parseInt(retryAfter, 10) * 1000 : null;
-          return reject(err);
-        }
-        if (res.statusCode === 401) {
-          return reject(new Error('GROQ_INVALID_API_KEY'));
-        }
+        if (res.statusCode === 429) return reject(new Error(`${provider}_RATE_LIMITED_429`));
+        if (res.statusCode === 402) return reject(new Error(`${provider}_INSUFFICIENT_BALANCE_402`));
+        if (res.statusCode === 401) return reject(new Error(`${provider}_INVALID_API_KEY_401`));
         if (res.statusCode >= 400) {
           let errorDetail = '';
           try { errorDetail = JSON.parse(data).error?.message || ''; } catch {}
-          return reject(new Error(`GROQ_API_ERROR_${res.statusCode}: ${errorDetail}`));
+          return reject(new Error(`${provider}_API_ERROR_${res.statusCode}: ${errorDetail}`));
         }
         try {
           const parsed = JSON.parse(data);
           if (!parsed.choices || !parsed.choices[0] || !parsed.choices[0].message) {
-            return reject(new Error('GROQ_MALFORMED_RESPONSE'));
+            return reject(new Error(`${provider}_MALFORMED_RESPONSE`));
           }
           const aiJson = JSON.parse(parsed.choices[0].message.content);
 
-          // Validate output structure
           const validated = validateAIOutput(aiJson);
           if (!validated) {
-            return reject(new Error('GROQ_OUTPUT_VALIDATION_FAILED'));
+            return reject(new Error(`${provider}_OUTPUT_VALIDATION_FAILED`));
           }
 
           resolve(validated);
         } catch (err) {
-          reject(new Error(`GROQ_JSON_PARSE_ERROR: ${err.message}`));
+          reject(new Error(`${provider}_JSON_PARSE_ERROR: ${err.message}`));
         }
       });
     });
 
-    req.on('timeout', () => { req.destroy(); reject(new Error('GROQ_SOCKET_TIMEOUT')); });
-    req.on('error', (err) => reject(new Error(`GROQ_NETWORK_ERROR: ${err.message}`)));
+    req.on('timeout', () => { req.destroy(); reject(new Error(`${provider}_SOCKET_TIMEOUT`)); });
+    req.on('error', (err) => reject(new Error(`${provider}_NETWORK_ERROR: ${err.message}`)));
     req.write(payload);
     req.end();
   });
 }
 
 // ═══════════════════════════════════════════════════════════════
-// CENTRALIZED AI ROUTER — 4-LAYER FAILOVER + STRUCTURED LOGGING
+// CENTRALIZED AI ROUTER — ALL-PROVIDER FAILOVER WATERFALL
 // ═══════════════════════════════════════════════════════════════
 
-/**
- * callAI(input, systemData)
- *
- * Attempts LLM providers in priority order:
- *   0. Groq     (primary)   — ultra-fast inference, OpenAI-compatible
- *   1. OpenAI   (fallback)  — with retry + exponential backoff
- *   2. Gemini   (fallback)  — corrected endpoint
- *   3. Ollama   (local)     — with health check
- *   4. Returns null          — rule engine takes over
- *
- * NEVER throws. Always returns { provider, data } or null.
- */
 async function callAI(input, systemData) {
   const startTime = Date.now();
+  
+  const providers = [
+    { name: 'OpenRouter', fn: () => withTimeout(callGenericOpenAI('OpenRouter', 'openrouter.ai', '/api/v1/chat/completions', 'OPENROUTER_API_KEY', 'OPENROUTER_MODEL', 'meta-llama/llama-3.1-8b-instruct:free', input, systemData), 5000, 'OPENROUTER') },
+    { name: 'Mistral', fn: () => withTimeout(callGenericOpenAI('Mistral', 'api.mistral.ai', '/v1/chat/completions', 'MISTRAL_API_KEY', 'MISTRAL_MODEL', 'mistral-small-latest', input, systemData), 5000, 'MISTRAL') },
+    { name: 'DeepSeek', fn: () => withTimeout(callGenericOpenAI('DeepSeek', 'api.deepseek.com', '/chat/completions', 'DEEPSEEK_API_KEY', 'DEEPSEEK_MODEL', 'deepseek-chat', input, systemData), 5000, 'DEEPSEEK') },
+    { name: 'Together', fn: () => withTimeout(callGenericOpenAI('Together', 'api.together.xyz', '/v1/chat/completions', 'TOGETHER_API_KEY', 'TOGETHER_MODEL', 'meta-llama/Llama-3.3-70B-Instruct-Turbo', input, systemData), 5000, 'TOGETHER') },
+    { name: 'Groq', fn: () => withTimeout(callGenericOpenAI('Groq', 'api.groq.com', '/openai/v1/chat/completions', 'GROQ_API_KEY', 'GROQ_MODEL', 'llama-3.1-70b-versatile', input, systemData), 5000, 'GROQ') },
+    { name: 'OpenAI', fn: () => callOpenAI(input, systemData) },
+    { name: 'Gemini', fn: () => callGemini(input, systemData) },
+    { name: 'Ollama', fn: () => callOllama(input, systemData) }
+  ];
 
-  // ── LAYER 0: Groq (Ultra-Fast) ──
-  try {
-    const result = await withTimeout(callGroq(input, systemData), GROQ_TIMEOUT_MS, 'GROQ');
-    logSuccess('Groq', `Response received in ${Date.now() - startTime}ms`);
-    return { provider: 'groq', data: result };
-  } catch (err) {
-    logError('Groq', `Failed: ${err.message}`);
-    logFallback('Groq', 'OpenAI');
+  for (let i = 0; i < providers.length; i++) {
+    const { name, fn } = providers[i];
+    try {
+      const result = await fn();
+      logSuccess(name, `Response received in ${Date.now() - startTime}ms`);
+      return { provider: name.toLowerCase(), data: result };
+    } catch (err) {
+      logError(name, `Failed: ${err.message}`);
+      if (i < providers.length - 1) logFallback(name, providers[i+1].name);
+    }
   }
 
-  // ── LAYER 1: OpenAI ──
-  try {
-    const result = await callOpenAI(input, systemData);
-    logSuccess('OpenAI', `Response received in ${Date.now() - startTime}ms`);
-    return { provider: 'openai', data: result };
-  } catch (err) {
-    logError('OpenAI', `Failed: ${err.message}`);
-    logFallback('OpenAI', 'Gemini');
-  }
-
-  // ── LAYER 2: Gemini ──
-  try {
-    const result = await callGemini(input, systemData);
-    logSuccess('Gemini', `Response received in ${Date.now() - startTime}ms`);
-    return { provider: 'gemini', data: result };
-  } catch (err) {
-    logError('Gemini', `Failed: ${err.message}`);
-    logFallback('Gemini', 'Ollama');
-  }
-
-  // ── LAYER 3: Ollama Local ──
-  try {
-    const result = await callOllama(input, systemData);
-    logSuccess('Ollama', `Response received in ${Date.now() - startTime}ms`);
-    return { provider: 'ollama', data: result };
-  } catch (err) {
-    logError('Ollama', `Failed: ${err.message}`);
-  }
-
-  // ── All LLMs unavailable — return null (rule engine takes over) ──
-  logWarn('Router', `All 4 LLM providers failed. Elapsed: ${Date.now() - startTime}ms. Falling back to deterministic rule engine.`);
+  logWarn('Router', `All LLM providers failed. Elapsed: ${Date.now() - startTime}ms. Falling back to deterministic rule engine.`);
   return null;
 }
 
