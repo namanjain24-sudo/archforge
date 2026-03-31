@@ -5,7 +5,7 @@ import Diagram from './components/Diagram';
 import Controls from './components/Controls';
 import InsightsPanel from './components/InsightsPanel';
 import {
-  Layers, Activity, AlertTriangle, MessageCircle, Zap,
+  Layers, AlertTriangle, MessageCircle, Zap,
   GitBranch, Database, Shield, BarChart2, ArrowRight, Cpu
 } from 'lucide-react';
 

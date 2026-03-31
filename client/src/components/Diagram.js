@@ -11,7 +11,7 @@ import ReactFlow, {
   ReactFlowProvider
 } from 'reactflow';
 import 'reactflow/dist/style.css';
-import { Database, Server, MonitorSmartphone, Share2, Layers as LayerIcon, Download, Share, Code, Info, Globe, Shield, Cpu, HardDrive, Cloud, Zap, Filter } from 'lucide-react';
+import { Database, Server, MonitorSmartphone, Share2, Layers as LayerIcon, Download, Share, Code, Globe, Cpu, HardDrive, Cloud, Zap } from 'lucide-react';
 import { toPng } from 'html-to-image';
 
 // ── ENTERPRISE COLOR SYSTEM ──

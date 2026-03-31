@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   Network, AlertCircle, TrendingUp, CheckCircle, ShieldAlert,
-  ChevronRight, Cpu, GitBranch, BarChart2, Zap, Lock, Database
+  ChevronRight, GitBranch, BarChart2, Lock
 } from 'lucide-react';
 
 const TAB_CONFIG = [
