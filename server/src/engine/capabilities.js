@@ -16,13 +16,21 @@ export const CAPABILITIES = {
   realtime:      { label: 'Realtime',      keywords: ['realtime', 'real-time', 'live chat', 'live updates', 'live tracking', 'live location', 'live gps', 'websocket', 'presence', 'instant', 'video call', 'video calls', 'conferencing', 'telemedicine', 'collaboration', 'collaborative', 'collaborative editing', 'co-editing'], nodeTypes: ['websocket_server', 'event_bus'] },
   analytics:     { label: 'Analytics',     keywords: ['analytics', 'metrics', 'dashboard', 'reporting', 'clickstream', 'etl', 'warehouse', 'insights'], nodeTypes: ['data_warehouse', 'stream_processor'] },
   notifications: { label: 'Notifications', keywords: ['notification', 'notifications', 'notify', 'push', 'email', 'sms', 'alert', 'alerts'], nodeTypes: ['push_service', 'email_service', 'sms_service'] },
-  auth:          { label: 'Auth',          keywords: ['auth', 'login', 'signup', 'oauth', 'sso', 'single sign-on', 'single sign on', 'identity', 'permission', 'authentication', 'authorization', 'role-based', 'rbac', 'user account', 'kyc'], nodeTypes: ['auth_service', 'identity_provider'] },
+  auth:          { label: 'Auth',          keywords: ['auth', 'login', 'log in', 'sign in', 'sign-in', 'signin', 'sign up', 'sign-up', 'signup', 'oauth', 'sso', 'single sign-on', 'single sign on', 'identity', 'permission', 'authentication', 'authorization', 'role-based', 'rbac', 'user account', 'kyc'], nodeTypes: ['auth_service', 'identity_provider'] },
   media:         { label: 'Media',         keywords: ['image', 'video', 'photo', 'media', 'upload', 'transcode', 'audio'], nodeTypes: ['blob_storage'] },
   geo:           { label: 'Geospatial',    keywords: ['location', 'geo', 'nearby', 'maps', 'gps', 'geospatial', 'tracking', 'live tracking', 'delivery tracking', 'courier', 'courier dispatch', 'driver dispatch', 'driver location', 'driver matching', 'eta', 'route optimisation', 'route optimization', 'delivery route', 'fleet', 'shipment', 'last mile'], nodeTypes: ['maps_service', 'time_series_db'] },
   ml:            { label: 'AI / ML',       keywords: ['ai', 'recommendation', 'recommendations', 'embedding', 'embeddings', 'llm', 'rag', 'vector', 'ml model', 'model serving', 'prediction', 'semantic', 'machine learning', 'symptom checker', 'personalization', 'ranking', 'fraud', 'fraud detection', 'anomaly', 'anomaly detection', 'risk scoring'], nodeTypes: ['model_serving', 'vector_db', 'feature_store'] },
   // Messaging is store-and-forward: a queue/bus is what delivers to offline
   // users and fans a group message out, so it is a real structural requirement.
   messaging:     { label: 'Messaging',     keywords: ['chat', 'messaging', 'conversation', 'direct message', 'group chat'], nodeTypes: ['message_queue', 'event_bus'] },
+  // Data that originates OUTSIDE the system. Without this a prompt like
+  // "show coupons available on Amazon and Flipkart" produced a coupon database
+  // that nothing ever filled — the single most damaging kind of omission,
+  // because the diagram looks complete while the product cannot work.
+  integration:   { label: 'External data source', keywords: ['available on', 'scrape', 'scraping', 'crawl', 'crawler', 'aggregate', 'aggregator', 'aggregates', 'third-party', 'third party', 'affiliate', 'partner api', 'public api', 'external api', 'fetch from', 'import from', 'sync from', 'pull from', 'integrate with', 'integrates with', 'integrated with', 'connects to'], nodeTypes: ['third_party_api'] },
+  // Externally-sourced data goes stale, so something must refresh it on a
+  // schedule rather than on a user request.
+  sync:          { label: 'Scheduled refresh',   keywords: ['periodically', 'periodic', 'every hour', 'every day', 'hourly', 'daily sync', 'cron', 'scheduled', 'refresh', 'keep up to date', 'kept up to date', 'continuously updated', 'up-to-date'], nodeTypes: ['scheduler', 'worker'] },
   caching:       { label: 'Caching',       keywords: ['cache', 'caching'], nodeTypes: ['cache'] },
   async:         { label: 'Async jobs',    keywords: ['queue', 'background job', 'worker', 'decouple'], nodeTypes: ['message_queue', 'worker'] },
 };

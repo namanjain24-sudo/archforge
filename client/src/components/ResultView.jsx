@@ -43,6 +43,14 @@ export function ResultView({ result, onNew }) {
     setBusy(true);
     try {
       const next = await reassess(nextArch, data.prompt);
+      // Re-verifying re-runs the auto-layout, which would discard wherever the
+      // user had dragged things. Keep their placement for every node that still
+      // exists; only genuinely new nodes take a computed position.
+      const placed = new Map(data.graph.nodes.map((n) => [n.id, n.position]));
+      next.graph = {
+        ...next.graph,
+        nodes: next.graph.nodes.map((n) => (placed.has(n.id) ? { ...n, position: placed.get(n.id) } : n)),
+      };
       setData(next);
       // keep selection only if the node still exists
       setSelected((s) => (next.architecture.nodes.some((n) => n.id === s) ? s : null));
@@ -129,13 +137,14 @@ export function ResultView({ result, onNew }) {
           )}
 
           <Diagram
-            key={data.generatedAt}
+            key={result.generatedAt}
             graph={data.graph}
             editable={editing}
             highlight={editing ? null : highlight}
             onNodeClick={(id) => editing && setSelected(id)}
             onEdgeClick={onEdgeClick}
             onConnect={onConnect}
+            onNodesPersist={(ns) => setData((d) => ({ ...d, graph: { ...d.graph, nodes: ns } }))}
           />
 
           {!editing && (

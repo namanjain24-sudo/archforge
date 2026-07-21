@@ -73,6 +73,12 @@ const SHOULD_FIRE = [
   ['photo uploads', 'media'], ['video transcoding', 'media'], ['audio streaming', 'media'],
   ['recommendations', 'ml'], ['fraud detection', 'ml'], ['semantic search', 'ml'],
   ['single sign-on', 'auth'], ['role-based access', 'auth'], ['user accounts', 'auth'],
+  ['user sign in', 'auth'], ['users log in', 'auth'], ['sign up flow', 'auth'],
+  // Data that originates outside the system — omitting it yields a database
+  // nothing ever fills, which looks complete but cannot work.
+  ['coupon codes available on amazon', 'integration'], ['aggregates listings from retailers', 'integration'],
+  ['scrapes postings from career pages', 'integration'], ['integrates with Stripe', 'integration'],
+  ['refreshed hourly', 'sync'], ['a cron job keeping data up to date', 'sync'],
 ];
 
 const SHOULD_NOT_FIRE = [
@@ -85,6 +91,11 @@ const SHOULD_NOT_FIRE = [
   ['a simple todo list app', 'payments'],
   ['a URL shortener', 'payments'],
   ['a data model for user profiles', 'ml'],
+  ['a chat app with group messaging', 'integration'],
+  ['a URL shortener', 'integration'],
+  ['an internal admin panel', 'integration'],
+  ['a blog with posts and comments', 'sync'],
+  ['a todo list app', 'sync'],
   ['a static documentation site', 'search'],
 ];
 

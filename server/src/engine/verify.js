@@ -236,6 +236,11 @@ export function verify(arch, ctx = {}) {
   const entryNodes = a.nodes.filter((n) => NODE_TYPES[n.type].entrypoint);
   if (entryNodes.length) {
     const order = (l) => LAYERS[l]?.order ?? 99;
+    // Prefer the nearest tier ABOVE the stranded node. A same-tier peer used to
+    // win (distance 0), which wired an unreachable service off another service
+    // instead of off the gateway — plausible-looking but the wrong topology.
+    // Strictly-upstream first, then a peer, then anything downstream.
+    const rank = (delta) => (delta > 0 ? delta : delta === 0 ? 50 : 100 - delta);
     const reachableFrom = (seeds) => {
       const seen = new Set(seeds);
       const stack = [...seeds];
@@ -260,11 +265,7 @@ export function verify(arch, ctx = {}) {
         .filter((n) => reachable.has(n.id)
           && isEdgeAllowed(n.layer, s.layer)
           && !isTypeEdgeForbidden(n.type, s.type))
-        .sort((x, y) => {
-          const dx = order(s.layer) - order(x.layer), dy = order(s.layer) - order(y.layer);
-          const px = dx >= 0 ? dx : 100 - dx, py = dy >= 0 ? dy : 100 - dy; // upstream wins
-          return px - py;
-        })[0];
+        .sort((x, y) => rank(order(s.layer) - order(x.layer)) - rank(order(s.layer) - order(y.layer)))[0];
       if (up) {
         // Use the protocol the target type demands (a stream processor wants
         // "stream", a queue "async") so this fix never introduces a violation.
