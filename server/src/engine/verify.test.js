@@ -476,3 +476,29 @@ test('stays quiet when the design already has a queue', () => {
   const f = verify(arch, {}).findings.filter((x) => x.id === 'async-offload' && /No queue, stream or worker/.test(x.message));
   assert.equal(f.length, 0);
 });
+
+test('an unreachable service is wired from the gateway, not from a peer service', () => {
+  // Regression: the tier-preference used to score a same-tier peer as the
+  // closest upstream, producing "User Service -> Coupon Service" instead of
+  // "Load Balancer -> Coupon Service".
+  const arch = norm({
+    system: { name: 'X' },
+    nodes: [
+      { id: 'web', type: 'web_app', label: 'Web App', why: 'x' },
+      { id: 'lb', type: 'load_balancer', label: 'Load Balancer', why: 'x' },
+      { id: 'user', type: 'service', label: 'User Service', why: 'x' },
+      { id: 'coupon', type: 'service', label: 'Coupon Service', why: 'x' }, // nothing feeds it
+      { id: 'db', type: 'nosql_db', label: 'Coupon DB', why: 'x' },
+    ],
+    edges: [
+      { id: 'e1', source: 'web', target: 'lb', label: 'traffic', protocol: 'sync', why: 'x' },
+      { id: 'e2', source: 'lb', target: 'user', label: 'route', protocol: 'sync', why: 'x' },
+      { id: 'e3', source: 'coupon', target: 'db', label: 'rw', protocol: 'sync', why: 'x' },
+    ],
+  });
+  const { arch: fixed } = verify(arch, {});
+  const feeders = fixed.edges.filter((e) => e.target === 'coupon').map((e) => e.source);
+  assert.ok(feeders.length, 'the stranded service must be wired in');
+  assert.ok(feeders.includes('lb'), `should be fed from the gateway tier, got: ${feeders.join(', ')}`);
+  assert.ok(!feeders.includes('user'), 'must not hang off a peer service when a gateway exists');
+});
