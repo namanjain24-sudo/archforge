@@ -1,0 +1,1771 @@
+{
+  "prompt": "a ticketing platform like Ticketmaster handling flash sales for concerts with seat reservation",
+  "generatedAt": "2026-07-21T14:35:49.432Z",
+  "architecture": {
+    "system": {
+      "name": "Ticketing Platform",
+      "summary": "A ticketing platform handling flash sales for concerts with seat reservation",
+      "domain": "Entertainment",
+      "scale": "hyperscale"
+    },
+    "assumptions": {
+      "dailyActiveUsers": 1000000,
+      "actionsPerUserPerDay": 5,
+      "readWriteRatio": 10,
+      "avgItemSizeBytes": 1024,
+      "retentionDays": 365,
+      "latencySloMs": 100,
+      "consistency": "strong"
+    },
+    "nodes": [
+      {
+        "id": "web-app",
+        "label": "Web App",
+        "type": "web_app",
+        "layer": "client",
+        "tech": "React",
+        "why": "User interface for customers",
+        "redundant": false,
+        "stateful": false
+      },
+      {
+        "id": "mobile-app",
+        "label": "Mobile App",
+        "type": "mobile_app",
+        "layer": "client",
+        "tech": "Flutter",
+        "why": "User interface for customers",
+        "redundant": false,
+        "stateful": false
+      },
+      {
+        "id": "cdn",
+        "label": "CDN",
+        "type": "cdn",
+        "layer": "edge",
+        "tech": "Cloudflare",
+        "why": "Content delivery network for static assets",
+        "redundant": true,
+        "stateful": false
+      },
+      {
+        "id": "load-balancer",
+        "label": "Load Balancer",
+        "type": "load_balancer",
+        "layer": "gateway",
+        "tech": "HAProxy",
+        "why": "Distribute traffic across services",
+        "redundant": true,
+        "stateful": false
+      },
+      {
+        "id": "api-gateway",
+        "label": "API Gateway",
+        "type": "api_gateway",
+        "layer": "gateway",
+        "tech": "NGINX",
+        "why": "API entry point and authentication",
+        "redundant": true,
+        "stateful": false
+      },
+      {
+        "id": "auth-service",
+        "label": "Auth Service",
+        "type": "auth_service",
+        "layer": "security",
+        "tech": "OAuth 2.0",
+        "why": "Authentication and authorization",
+        "redundant": true,
+        "stateful": false
+      },
+      {
+        "id": "concert-service",
+        "label": "Concert Service",
+        "type": "service",
+        "layer": "service",
+        "tech": "Node.js",
+        "why": "Manage concert information",
+        "redundant": true,
+        "stateful": false
+      },
+      {
+        "id": "seat-reservation-service",
+        "label": "Seat Reservation Service",
+        "type": "service",
+        "layer": "service",
+        "tech": "Go",
+        "why": "Manage seat reservations",
+        "redundant": true,
+        "stateful": false
+      },
+      {
+        "id": "ticket-service",
+        "label": "Ticket Service",
+        "type": "service",
+        "layer": "service",
+        "tech": "Python",
+        "why": "Manage ticket sales",
+        "redundant": true,
+        "stateful": false
+      },
+      {
+        "id": "message-queue",
+        "label": "Message Queue",
+        "type": "message_queue",
+        "layer": "async",
+        "tech": "RabbitMQ",
+        "why": "Asynchronous processing for notifications",
+        "redundant": true,
+        "stateful": true
+      },
+      {
+        "id": "worker",
+        "label": "Worker",
+        "type": "worker",
+        "layer": "async",
+        "tech": "Celery",
+        "why": "Process notifications and updates",
+        "redundant": true,
+        "stateful": false
+      },
+      {
+        "id": "concert-db",
+        "label": "Concert DB",
+        "type": "sql_db",
+        "layer": "data",
+        "tech": "PostgreSQL",
+        "why": "Store concert information",
+        "redundant": true,
+        "stateful": true
+      },
+      {
+        "id": "seat-reservation-db",
+        "label": "Seat Reservation DB",
+        "type": "sql_db",
+        "layer": "data",
+        "tech": "MySQL",
+        "why": "Store seat reservation information",
+        "redundant": true,
+        "stateful": true
+      },
+      {
+        "id": "ticket-db",
+        "label": "Ticket DB",
+        "type": "sql_db",
+        "layer": "data",
+        "tech": "MySQL",
+        "why": "Store ticket sales information",
+        "redundant": true,
+        "stateful": true
+      },
+      {
+        "id": "cache",
+        "label": "Cache",
+        "type": "cache",
+        "layer": "data",
+        "tech": "Redis",
+        "why": "Cache read-heavy data",
+        "redundant": true,
+        "stateful": true
+      },
+      {
+        "id": "search-index",
+        "label": "Search Index",
+        "type": "search_index",
+        "layer": "data",
+        "tech": "Elasticsearch",
+        "why": "Full-text search for concerts and tickets",
+        "redundant": true,
+        "stateful": true
+      },
+      {
+        "id": "logging",
+        "label": "Logging",
+        "type": "logging",
+        "layer": "observability",
+        "tech": "ELK Stack",
+        "why": "Log collection and analysis",
+        "redundant": true,
+        "stateful": false
+      },
+      {
+        "id": "metrics",
+        "label": "Metrics",
+        "type": "metrics",
+        "layer": "observability",
+        "tech": "Prometheus",
+        "why": "Performance monitoring",
+        "redundant": true,
+        "stateful": false
+      },
+      {
+        "id": "tracing",
+        "label": "Tracing",
+        "type": "tracing",
+        "layer": "observability",
+        "tech": "Jaeger",
+        "why": "Distributed tracing",
+        "redundant": true,
+        "stateful": false
+      }
+    ],
+    "edges": [
+      {
+        "id": "web-app-to-load-balancer",
+        "source": "web-app",
+        "target": "load-balancer",
+        "label": "HTTP requests",
+        "protocol": "sync",
+        "why": "User requests"
+      },
+      {
+        "id": "mobile-app-to-load-balancer",
+        "source": "mobile-app",
+        "target": "load-balancer",
+        "label": "HTTP requests",
+        "protocol": "sync",
+        "why": "User requests"
+      },
+      {
+        "id": "api-gateway-to-auth-service",
+        "source": "api-gateway",
+        "target": "auth-service",
+        "label": "Authentication requests",
+        "protocol": "sync",
+        "why": "Authentication"
+      },
+      {
+        "id": "auth-service-to-concert-service",
+        "source": "concert-service",
+        "target": "auth-service",
+        "label": "Authenticated requests",
+        "protocol": "sync",
+        "why": "Authorized access"
+      },
+      {
+        "id": "concert-service-to-concert-db",
+        "source": "concert-service",
+        "target": "concert-db",
+        "label": "Database queries",
+        "protocol": "sync",
+        "why": "Data storage"
+      },
+      {
+        "id": "concert-service-to-cache",
+        "source": "concert-service",
+        "target": "cache",
+        "label": "Cache queries",
+        "protocol": "sync",
+        "why": "Cache read-heavy data"
+      },
+      {
+        "id": "seat-reservation-service-to-seat-reservation-db",
+        "source": "seat-reservation-service",
+        "target": "seat-reservation-db",
+        "label": "Database queries",
+        "protocol": "sync",
+        "why": "Data storage"
+      },
+      {
+        "id": "ticket-service-to-ticket-db",
+        "source": "ticket-service",
+        "target": "ticket-db",
+        "label": "Database queries",
+        "protocol": "sync",
+        "why": "Data storage"
+      },
+      {
+        "id": "concert-service-to-message-queue",
+        "source": "concert-service",
+        "target": "message-queue",
+        "label": "Notification requests",
+        "protocol": "async",
+        "why": "Asynchronous processing"
+      },
+      {
+        "id": "message-queue-to-worker",
+        "source": "message-queue",
+        "target": "worker",
+        "label": "Notification processing",
+        "protocol": "async",
+        "why": "Process notifications"
+      },
+      {
+        "id": "worker-to-search-index",
+        "source": "worker",
+        "target": "search-index",
+        "label": "Index updates",
+        "protocol": "sync",
+        "why": "Full-text search"
+      },
+      {
+        "id": "concert-service-to-metrics",
+        "source": "concert-service",
+        "target": "metrics",
+        "label": "Performance data",
+        "protocol": "sync",
+        "why": "Performance monitoring"
+      },
+      {
+        "id": "fix-api-gateway-concert-service",
+        "source": "api-gateway",
+        "target": "concert-service",
+        "protocol": "sync",
+        "label": "via Concert Service",
+        "why": "Added by verifier to satisfy the call-rules."
+      },
+      {
+        "id": "fix-concert-service-logging",
+        "source": "concert-service",
+        "target": "logging",
+        "protocol": "sync",
+        "label": "Log data",
+        "why": "Added by verifier to satisfy the call-rules."
+      },
+      {
+        "id": "fix-concert-service-tracing",
+        "source": "concert-service",
+        "target": "tracing",
+        "protocol": "sync",
+        "label": "Trace data",
+        "why": "Added by verifier to satisfy the call-rules."
+      },
+      {
+        "id": "fix-web-app-cdn",
+        "source": "web-app",
+        "target": "cdn",
+        "protocol": "sync",
+        "label": "traffic",
+        "why": "Added by verifier to satisfy the call-rules."
+      },
+      {
+        "id": "fix-cdn-load-balancer",
+        "source": "cdn",
+        "target": "load-balancer",
+        "protocol": "sync",
+        "label": "forward",
+        "why": "Added by verifier to satisfy the call-rules."
+      },
+      {
+        "id": "fix-cdn-api-gateway",
+        "source": "cdn",
+        "target": "api-gateway",
+        "protocol": "sync",
+        "label": "route",
+        "why": "Added by verifier to satisfy the call-rules."
+      },
+      {
+        "id": "fix-concert-service-seat-reservation-service",
+        "source": "concert-service",
+        "target": "seat-reservation-service",
+        "protocol": "sync",
+        "label": "route",
+        "why": "Added by verifier to satisfy the call-rules."
+      },
+      {
+        "id": "fix-concert-service-ticket-service",
+        "source": "concert-service",
+        "target": "ticket-service",
+        "protocol": "sync",
+        "label": "route",
+        "why": "Added by verifier to satisfy the call-rules."
+      }
+    ],
+    "tradeoffs": [
+      {
+        "decision": "Database choice",
+        "choice": "PostgreSQL",
+        "alternative": "MySQL",
+        "why": "PostgreSQL is more scalable and has better support for concurrent updates"
+      },
+      {
+        "decision": "Cache choice",
+        "choice": "Redis",
+        "alternative": "Memcached",
+        "why": "Redis has better support for persistence and clustering"
+      },
+      {
+        "decision": "Message queue choice",
+        "choice": "RabbitMQ",
+        "alternative": "Apache Kafka",
+        "why": "RabbitMQ is more mature and has better support for message queuing"
+      }
+    ],
+    "notes": [
+      "The system is designed to handle high traffic and large amounts of data.",
+      "The use of a load balancer and multiple instances of each service ensures high availability.",
+      "The use of a cache and a search index improves performance and reduces the load on the databases.",
+      "The use of a message queue and a worker ensures that notifications are processed asynchronously and do not block the main request path."
+    ]
+  },
+  "graph": {
+    "nodes": [
+      {
+        "id": "web-app",
+        "type": "arch",
+        "position": {
+          "x": 1169.6666666666667,
+          "y": 12
+        },
+        "width": 190,
+        "height": 66,
+        "data": {
+          "label": "Web App",
+          "nodeType": "web_app",
+          "layer": "client",
+          "layerLabel": "Client",
+          "icon": "monitor",
+          "tech": "React",
+          "why": "User interface for customers",
+          "redundant": false,
+          "stateful": false,
+          "isStore": false,
+          "cloud": null
+        }
+      },
+      {
+        "id": "mobile-app",
+        "type": "arch",
+        "position": {
+          "x": 924.6666666666667,
+          "y": 12
+        },
+        "width": 190,
+        "height": 66,
+        "data": {
+          "label": "Mobile App",
+          "nodeType": "mobile_app",
+          "layer": "client",
+          "layerLabel": "Client",
+          "icon": "smartphone",
+          "tech": "Flutter",
+          "why": "User interface for customers",
+          "redundant": false,
+          "stateful": false,
+          "isStore": false,
+          "cloud": null
+        }
+      },
+      {
+        "id": "cdn",
+        "type": "arch",
+        "position": {
+          "x": 1201.3333333333335,
+          "y": 168
+        },
+        "width": 190,
+        "height": 66,
+        "data": {
+          "label": "CDN",
+          "nodeType": "cdn",
+          "layer": "edge",
+          "layerLabel": "Edge / CDN",
+          "icon": "globe",
+          "tech": "Cloudflare",
+          "why": "Content delivery network for static assets",
+          "redundant": true,
+          "stateful": false,
+          "isStore": false,
+          "cloud": {
+            "aws": "CloudFront",
+            "gcp": "Cloud CDN",
+            "azure": "Azure CDN"
+          }
+        }
+      },
+      {
+        "id": "load-balancer",
+        "type": "arch",
+        "position": {
+          "x": 988.0000000000001,
+          "y": 324
+        },
+        "width": 190,
+        "height": 66,
+        "data": {
+          "label": "Load Balancer",
+          "nodeType": "load_balancer",
+          "layer": "gateway",
+          "layerLabel": "Gateway",
+          "icon": "split",
+          "tech": "HAProxy",
+          "why": "Distribute traffic across services",
+          "redundant": true,
+          "stateful": false,
+          "isStore": false,
+          "cloud": {
+            "aws": "ELB / ALB",
+            "gcp": "Cloud Load Balancing",
+            "azure": "Load Balancer"
+          }
+        }
+      },
+      {
+        "id": "api-gateway",
+        "type": "arch",
+        "position": {
+          "x": 1233,
+          "y": 324
+        },
+        "width": 190,
+        "height": 66,
+        "data": {
+          "label": "API Gateway",
+          "nodeType": "api_gateway",
+          "layer": "gateway",
+          "layerLabel": "Gateway",
+          "icon": "door-open",
+          "tech": "NGINX",
+          "why": "API entry point and authentication",
+          "redundant": true,
+          "stateful": false,
+          "isStore": false,
+          "cloud": {
+            "aws": "API Gateway",
+            "gcp": "API Gateway",
+            "azure": "API Management"
+          }
+        }
+      },
+      {
+        "id": "auth-service",
+        "type": "arch",
+        "position": {
+          "x": 12,
+          "y": 1320
+        },
+        "width": 190,
+        "height": 66,
+        "data": {
+          "label": "Auth Service",
+          "nodeType": "auth_service",
+          "layer": "security",
+          "layerLabel": "Security / Identity",
+          "icon": "lock",
+          "tech": "OAuth 2.0",
+          "why": "Authentication and authorization",
+          "redundant": true,
+          "stateful": false,
+          "isStore": false,
+          "cloud": {
+            "aws": "Cognito",
+            "gcp": "Identity Platform",
+            "azure": "Entra ID / B2C"
+          }
+        }
+      },
+      {
+        "id": "concert-service",
+        "type": "arch",
+        "position": {
+          "x": 1264.6666666666667,
+          "y": 480
+        },
+        "width": 190,
+        "height": 66,
+        "data": {
+          "label": "Concert Service",
+          "nodeType": "service",
+          "layer": "service",
+          "layerLabel": "Services",
+          "icon": "box",
+          "tech": "Node.js",
+          "why": "Manage concert information",
+          "redundant": true,
+          "stateful": false,
+          "isStore": false,
+          "cloud": {
+            "aws": "ECS / EKS",
+            "gcp": "Cloud Run / GKE",
+            "azure": "AKS / Container Apps"
+          }
+        }
+      },
+      {
+        "id": "seat-reservation-service",
+        "type": "arch",
+        "position": {
+          "x": 1340.6666666666667,
+          "y": 696
+        },
+        "width": 190,
+        "height": 66,
+        "data": {
+          "label": "Seat Reservation Service",
+          "nodeType": "service",
+          "layer": "service",
+          "layerLabel": "Services",
+          "icon": "box",
+          "tech": "Go",
+          "why": "Manage seat reservations",
+          "redundant": true,
+          "stateful": false,
+          "isStore": false,
+          "cloud": {
+            "aws": "ECS / EKS",
+            "gcp": "Cloud Run / GKE",
+            "azure": "AKS / Container Apps"
+          }
+        }
+      },
+      {
+        "id": "ticket-service",
+        "type": "arch",
+        "position": {
+          "x": 1129.6666666666667,
+          "y": 696
+        },
+        "width": 190,
+        "height": 66,
+        "data": {
+          "label": "Ticket Service",
+          "nodeType": "service",
+          "layer": "service",
+          "layerLabel": "Services",
+          "icon": "box",
+          "tech": "Python",
+          "why": "Manage ticket sales",
+          "redundant": true,
+          "stateful": false,
+          "isStore": false,
+          "cloud": {
+            "aws": "ECS / EKS",
+            "gcp": "Cloud Run / GKE",
+            "azure": "AKS / Container Apps"
+          }
+        }
+      },
+      {
+        "id": "message-queue",
+        "type": "arch",
+        "position": {
+          "x": 639.6666666666667,
+          "y": 852
+        },
+        "width": 190,
+        "height": 66,
+        "data": {
+          "label": "Message Queue",
+          "nodeType": "message_queue",
+          "layer": "async",
+          "layerLabel": "Async / Messaging",
+          "icon": "list-ordered",
+          "tech": "RabbitMQ",
+          "why": "Asynchronous processing for notifications",
+          "redundant": true,
+          "stateful": true,
+          "isStore": false,
+          "cloud": {
+            "aws": "SQS",
+            "gcp": "Pub/Sub",
+            "azure": "Service Bus"
+          }
+        }
+      },
+      {
+        "id": "worker",
+        "type": "arch",
+        "position": {
+          "x": 639.6666666666667,
+          "y": 1008
+        },
+        "width": 190,
+        "height": 66,
+        "data": {
+          "label": "Worker",
+          "nodeType": "worker",
+          "layer": "async",
+          "layerLabel": "Async / Messaging",
+          "icon": "cog",
+          "tech": "Celery",
+          "why": "Process notifications and updates",
+          "redundant": true,
+          "stateful": false,
+          "isStore": false,
+          "cloud": {
+            "aws": "ECS / Lambda",
+            "gcp": "Cloud Run Jobs",
+            "azure": "Container Apps Jobs"
+          }
+        }
+      },
+      {
+        "id": "concert-db",
+        "type": "arch",
+        "position": {
+          "x": 149.66666666666674,
+          "y": 1164
+        },
+        "width": 190,
+        "height": 66,
+        "data": {
+          "label": "Concert DB",
+          "nodeType": "sql_db",
+          "layer": "data",
+          "layerLabel": "Data",
+          "icon": "database",
+          "tech": "PostgreSQL",
+          "why": "Store concert information",
+          "redundant": true,
+          "stateful": true,
+          "isStore": true,
+          "cloud": {
+            "aws": "RDS / Aurora",
+            "gcp": "Cloud SQL / AlloyDB",
+            "azure": "Azure SQL"
+          }
+        }
+      },
+      {
+        "id": "seat-reservation-db",
+        "type": "arch",
+        "position": {
+          "x": 1340.6666666666667,
+          "y": 1164
+        },
+        "width": 190,
+        "height": 66,
+        "data": {
+          "label": "Seat Reservation DB",
+          "nodeType": "sql_db",
+          "layer": "data",
+          "layerLabel": "Data",
+          "icon": "database",
+          "tech": "MySQL",
+          "why": "Store seat reservation information",
+          "redundant": true,
+          "stateful": true,
+          "isStore": true,
+          "cloud": {
+            "aws": "RDS / Aurora",
+            "gcp": "Cloud SQL / AlloyDB",
+            "azure": "Azure SQL"
+          }
+        }
+      },
+      {
+        "id": "ticket-db",
+        "type": "arch",
+        "position": {
+          "x": 1129.6666666666667,
+          "y": 1164
+        },
+        "width": 190,
+        "height": 66,
+        "data": {
+          "label": "Ticket DB",
+          "nodeType": "sql_db",
+          "layer": "data",
+          "layerLabel": "Data",
+          "icon": "database",
+          "tech": "MySQL",
+          "why": "Store ticket sales information",
+          "redundant": true,
+          "stateful": true,
+          "isStore": true,
+          "cloud": {
+            "aws": "RDS / Aurora",
+            "gcp": "Cloud SQL / AlloyDB",
+            "azure": "Azure SQL"
+          }
+        }
+      },
+      {
+        "id": "cache",
+        "type": "arch",
+        "position": {
+          "x": 394.66666666666674,
+          "y": 1164
+        },
+        "width": 190,
+        "height": 66,
+        "data": {
+          "label": "Cache",
+          "nodeType": "cache",
+          "layer": "data",
+          "layerLabel": "Data",
+          "icon": "gauge",
+          "tech": "Redis",
+          "why": "Cache read-heavy data",
+          "redundant": true,
+          "stateful": true,
+          "isStore": true,
+          "cloud": {
+            "aws": "ElastiCache (Redis)",
+            "gcp": "Memorystore",
+            "azure": "Azure Cache for Redis"
+          }
+        }
+      },
+      {
+        "id": "search-index",
+        "type": "arch",
+        "position": {
+          "x": 639.6666666666667,
+          "y": 1164
+        },
+        "width": 190,
+        "height": 66,
+        "data": {
+          "label": "Search Index",
+          "nodeType": "search_index",
+          "layer": "data",
+          "layerLabel": "Data",
+          "icon": "search",
+          "tech": "Elasticsearch",
+          "why": "Full-text search for concerts and tickets",
+          "redundant": true,
+          "stateful": true,
+          "isStore": true,
+          "cloud": {
+            "aws": "OpenSearch",
+            "gcp": "Vertex AI Search",
+            "azure": "AI Search"
+          }
+        }
+      },
+      {
+        "id": "logging",
+        "type": "arch",
+        "position": {
+          "x": 989.6666666666667,
+          "y": 1476
+        },
+        "width": 190,
+        "height": 66,
+        "data": {
+          "label": "Logging",
+          "nodeType": "logging",
+          "layer": "observability",
+          "layerLabel": "Observability",
+          "icon": "scroll-text",
+          "tech": "ELK Stack",
+          "why": "Log collection and analysis",
+          "redundant": true,
+          "stateful": false,
+          "isStore": true,
+          "cloud": {
+            "aws": "CloudWatch Logs",
+            "gcp": "Cloud Logging",
+            "azure": "Monitor Logs"
+          }
+        }
+      },
+      {
+        "id": "metrics",
+        "type": "arch",
+        "position": {
+          "x": 744.6666666666667,
+          "y": 1476
+        },
+        "width": 190,
+        "height": 66,
+        "data": {
+          "label": "Metrics",
+          "nodeType": "metrics",
+          "layer": "observability",
+          "layerLabel": "Observability",
+          "icon": "activity",
+          "tech": "Prometheus",
+          "why": "Performance monitoring",
+          "redundant": true,
+          "stateful": false,
+          "isStore": false,
+          "cloud": {
+            "aws": "CloudWatch",
+            "gcp": "Cloud Monitoring",
+            "azure": "Azure Monitor"
+          }
+        }
+      },
+      {
+        "id": "tracing",
+        "type": "arch",
+        "position": {
+          "x": 1234.6666666666667,
+          "y": 1476
+        },
+        "width": 190,
+        "height": 66,
+        "data": {
+          "label": "Tracing",
+          "nodeType": "tracing",
+          "layer": "observability",
+          "layerLabel": "Observability",
+          "icon": "git-commit-horizontal",
+          "tech": "Jaeger",
+          "why": "Distributed tracing",
+          "redundant": true,
+          "stateful": false,
+          "isStore": false,
+          "cloud": {
+            "aws": "X-Ray",
+            "gcp": "Cloud Trace",
+            "azure": "App Insights"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "web-app-to-load-balancer",
+        "source": "web-app",
+        "target": "load-balancer",
+        "label": "HTTP requests",
+        "animated": false,
+        "data": {
+          "protocol": "sync",
+          "protocolLabel": "Sync — request/response",
+          "why": "User requests"
+        }
+      },
+      {
+        "id": "mobile-app-to-load-balancer",
+        "source": "mobile-app",
+        "target": "load-balancer",
+        "label": "HTTP requests",
+        "animated": false,
+        "data": {
+          "protocol": "sync",
+          "protocolLabel": "Sync — request/response",
+          "why": "User requests"
+        }
+      },
+      {
+        "id": "api-gateway-to-auth-service",
+        "source": "api-gateway",
+        "target": "auth-service",
+        "label": "Authentication requests",
+        "animated": false,
+        "data": {
+          "protocol": "sync",
+          "protocolLabel": "Sync — request/response",
+          "why": "Authentication"
+        }
+      },
+      {
+        "id": "auth-service-to-concert-service",
+        "source": "concert-service",
+        "target": "auth-service",
+        "label": "Authenticated requests",
+        "animated": false,
+        "data": {
+          "protocol": "sync",
+          "protocolLabel": "Sync — request/response",
+          "why": "Authorized access"
+        }
+      },
+      {
+        "id": "concert-service-to-concert-db",
+        "source": "concert-service",
+        "target": "concert-db",
+        "label": "Database queries",
+        "animated": false,
+        "data": {
+          "protocol": "sync",
+          "protocolLabel": "Sync — request/response",
+          "why": "Data storage"
+        }
+      },
+      {
+        "id": "concert-service-to-cache",
+        "source": "concert-service",
+        "target": "cache",
+        "label": "Cache queries",
+        "animated": false,
+        "data": {
+          "protocol": "sync",
+          "protocolLabel": "Sync — request/response",
+          "why": "Cache read-heavy data"
+        }
+      },
+      {
+        "id": "seat-reservation-service-to-seat-reservation-db",
+        "source": "seat-reservation-service",
+        "target": "seat-reservation-db",
+        "label": "Database queries",
+        "animated": false,
+        "data": {
+          "protocol": "sync",
+          "protocolLabel": "Sync — request/response",
+          "why": "Data storage"
+        }
+      },
+      {
+        "id": "ticket-service-to-ticket-db",
+        "source": "ticket-service",
+        "target": "ticket-db",
+        "label": "Database queries",
+        "animated": false,
+        "data": {
+          "protocol": "sync",
+          "protocolLabel": "Sync — request/response",
+          "why": "Data storage"
+        }
+      },
+      {
+        "id": "concert-service-to-message-queue",
+        "source": "concert-service",
+        "target": "message-queue",
+        "label": "Notification requests",
+        "animated": false,
+        "data": {
+          "protocol": "async",
+          "protocolLabel": "Async — queue/event",
+          "why": "Asynchronous processing"
+        }
+      },
+      {
+        "id": "message-queue-to-worker",
+        "source": "message-queue",
+        "target": "worker",
+        "label": "Notification processing",
+        "animated": false,
+        "data": {
+          "protocol": "async",
+          "protocolLabel": "Async — queue/event",
+          "why": "Process notifications"
+        }
+      },
+      {
+        "id": "worker-to-search-index",
+        "source": "worker",
+        "target": "search-index",
+        "label": "Index updates",
+        "animated": false,
+        "data": {
+          "protocol": "sync",
+          "protocolLabel": "Sync — request/response",
+          "why": "Full-text search"
+        }
+      },
+      {
+        "id": "concert-service-to-metrics",
+        "source": "concert-service",
+        "target": "metrics",
+        "label": "Performance data",
+        "animated": false,
+        "data": {
+          "protocol": "sync",
+          "protocolLabel": "Sync — request/response",
+          "why": "Performance monitoring"
+        }
+      },
+      {
+        "id": "fix-api-gateway-concert-service",
+        "source": "api-gateway",
+        "target": "concert-service",
+        "label": "via Concert Service",
+        "animated": false,
+        "data": {
+          "protocol": "sync",
+          "protocolLabel": "Sync — request/response",
+          "why": "Added by verifier to satisfy the call-rules."
+        }
+      },
+      {
+        "id": "fix-concert-service-logging",
+        "source": "concert-service",
+        "target": "logging",
+        "label": "Log data",
+        "animated": false,
+        "data": {
+          "protocol": "sync",
+          "protocolLabel": "Sync — request/response",
+          "why": "Added by verifier to satisfy the call-rules."
+        }
+      },
+      {
+        "id": "fix-concert-service-tracing",
+        "source": "concert-service",
+        "target": "tracing",
+        "label": "Trace data",
+        "animated": false,
+        "data": {
+          "protocol": "sync",
+          "protocolLabel": "Sync — request/response",
+          "why": "Added by verifier to satisfy the call-rules."
+        }
+      },
+      {
+        "id": "fix-web-app-cdn",
+        "source": "web-app",
+        "target": "cdn",
+        "label": "traffic",
+        "animated": false,
+        "data": {
+          "protocol": "sync",
+          "protocolLabel": "Sync — request/response",
+          "why": "Added by verifier to satisfy the call-rules."
+        }
+      },
+      {
+        "id": "fix-cdn-load-balancer",
+        "source": "cdn",
+        "target": "load-balancer",
+        "label": "forward",
+        "animated": false,
+        "data": {
+          "protocol": "sync",
+          "protocolLabel": "Sync — request/response",
+          "why": "Added by verifier to satisfy the call-rules."
+        }
+      },
+      {
+        "id": "fix-cdn-api-gateway",
+        "source": "cdn",
+        "target": "api-gateway",
+        "label": "route",
+        "animated": false,
+        "data": {
+          "protocol": "sync",
+          "protocolLabel": "Sync — request/response",
+          "why": "Added by verifier to satisfy the call-rules."
+        }
+      },
+      {
+        "id": "fix-concert-service-seat-reservation-service",
+        "source": "concert-service",
+        "target": "seat-reservation-service",
+        "label": "route",
+        "animated": false,
+        "data": {
+          "protocol": "sync",
+          "protocolLabel": "Sync — request/response",
+          "why": "Added by verifier to satisfy the call-rules."
+        }
+      },
+      {
+        "id": "fix-concert-service-ticket-service",
+        "source": "concert-service",
+        "target": "ticket-service",
+        "label": "route",
+        "animated": false,
+        "data": {
+          "protocol": "sync",
+          "protocolLabel": "Sync — request/response",
+          "why": "Added by verifier to satisfy the call-rules."
+        }
+      }
+    ]
+  },
+  "findings": [
+    {
+      "id": "allowed-layer-edges",
+      "title": "Only valid layer-to-layer connections",
+      "severity": "error",
+      "pillar": "reliability",
+      "message": "Illegal connection gateway→gateway removed (no valid path).",
+      "nodes": [],
+      "edges": [
+        "load-balancer-to-api-gateway"
+      ],
+      "fixed": true
+    },
+    {
+      "id": "allowed-layer-edges",
+      "title": "Only valid layer-to-layer connections",
+      "severity": "error",
+      "pillar": "reliability",
+      "message": "Backwards connection security→service reversed to service→security.",
+      "nodes": [],
+      "edges": [
+        "auth-service-to-concert-service"
+      ],
+      "fixed": true
+    },
+    {
+      "id": "allowed-layer-edges",
+      "title": "Only valid layer-to-layer connections",
+      "severity": "error",
+      "pillar": "reliability",
+      "message": "Illegal connection gateway→observability re-routed through Concert Service.",
+      "nodes": [],
+      "edges": [
+        "api-gateway-to-logging"
+      ],
+      "fixed": true
+    },
+    {
+      "id": "allowed-layer-edges",
+      "title": "Only valid layer-to-layer connections",
+      "severity": "error",
+      "pillar": "reliability",
+      "message": "Illegal connection gateway→observability re-routed through Concert Service.",
+      "nodes": [],
+      "edges": [
+        "api-gateway-to-tracing"
+      ],
+      "fixed": true
+    },
+    {
+      "id": "no-orphan-nodes",
+      "title": "No orphan / unreachable components",
+      "severity": "warning",
+      "pillar": "operational",
+      "message": "CDN was unconnected — wired into the flow.",
+      "nodes": [
+        "cdn"
+      ],
+      "edges": [],
+      "fixed": true
+    },
+    {
+      "id": "no-orphan-nodes",
+      "title": "No orphan / unreachable components",
+      "severity": "warning",
+      "pillar": "operational",
+      "message": "Unreachable from the entrypoint — wired back into the flow: API Gateway, Seat Reservation Service, Ticket Service.",
+      "nodes": [
+        "api-gateway",
+        "auth-service",
+        "concert-service",
+        "seat-reservation-service",
+        "ticket-service",
+        "message-queue",
+        "worker",
+        "concert-db",
+        "seat-reservation-db",
+        "ticket-db",
+        "cache",
+        "search-index"
+      ],
+      "edges": [],
+      "fixed": true
+    },
+    {
+      "id": "rate-limit-at-gateway",
+      "title": "Rate limiting at the edge/gateway",
+      "severity": "info",
+      "pillar": "security",
+      "message": "No explicit rate limiting at the edge — add it at the gateway/WAF to protect downstream services from abuse and spikes.",
+      "nodes": [],
+      "edges": [],
+      "fixed": false
+    },
+    {
+      "id": "no-hallucinated-components",
+      "title": "No irrelevant components",
+      "severity": "info",
+      "pillar": "cost",
+      "message": "Not requested in the prompt — keep only if you actually need them: Search Index (Search).",
+      "nodes": [],
+      "edges": [],
+      "fixed": false
+    }
+  ],
+  "capacity": {
+    "raw": {
+      "avgQps": 57.870370370370374,
+      "peakQps": 173.61111111111111,
+      "readQps": 52.60942760942761,
+      "writeQps": 5.260942760942761,
+      "storagePerDayBytes": 465454545.45454544,
+      "totalStorageBytes": 169890909090.9091,
+      "bandwidthOutBps": 53872.053872053875,
+      "cacheBytes": 930909090.909091,
+      "appServers": 2
+    },
+    "metrics": [
+      {
+        "label": "Average QPS",
+        "value": "58/s",
+        "hint": "1.0M DAU × 5 actions/day"
+      },
+      {
+        "label": "Peak QPS",
+        "value": "174/s",
+        "hint": "3× average (bursty traffic)"
+      },
+      {
+        "label": "Read : Write",
+        "value": "53/s : 5.3/s",
+        "hint": "10:1 ratio"
+      },
+      {
+        "label": "New data / day",
+        "value": "443.9 MB",
+        "hint": "454.5K writes × 1.0 KB"
+      },
+      {
+        "label": "Total storage",
+        "value": "158.2 GB",
+        "hint": "over 365-day retention"
+      },
+      {
+        "label": "Read bandwidth",
+        "value": "52.6 KB/s",
+        "hint": "egress on reads"
+      },
+      {
+        "label": "Cache working set",
+        "value": "887.8 MB",
+        "hint": "~20% of daily reads"
+      },
+      {
+        "label": "App instances",
+        "value": "~2",
+        "hint": "peak ÷ 1000 QPS/instance"
+      }
+    ]
+  },
+  "review": {
+    "overall": 99,
+    "pillars": [
+      {
+        "pillar": "reliability",
+        "label": "Reliability",
+        "score": 100,
+        "findings": []
+      },
+      {
+        "pillar": "performance",
+        "label": "Performance Efficiency",
+        "score": 100,
+        "findings": []
+      },
+      {
+        "pillar": "security",
+        "label": "Security",
+        "score": 97,
+        "findings": [
+          {
+            "id": "rate-limit-at-gateway",
+            "title": "Rate limiting at the edge/gateway",
+            "severity": "info",
+            "message": "No explicit rate limiting at the edge — add it at the gateway/WAF to protect downstream services from abuse and spikes."
+          }
+        ]
+      },
+      {
+        "pillar": "cost",
+        "label": "Cost Optimization",
+        "score": 97,
+        "findings": [
+          {
+            "id": "no-hallucinated-components",
+            "title": "No irrelevant components",
+            "severity": "info",
+            "message": "Not requested in the prompt — keep only if you actually need them: Search Index (Search)."
+          }
+        ]
+      },
+      {
+        "pillar": "operational",
+        "label": "Operational Excellence",
+        "score": 100,
+        "findings": []
+      },
+      {
+        "pillar": "sustainability",
+        "label": "Sustainability",
+        "score": 100,
+        "findings": []
+      }
+    ]
+  },
+  "readiness": {
+    "score": 100,
+    "present": 8,
+    "total": 8,
+    "items": [
+      {
+        "item": "Gateway / load balancing",
+        "present": true
+      },
+      {
+        "item": "Caching layer",
+        "present": true
+      },
+      {
+        "item": "Asynchronous processing",
+        "present": true
+      },
+      {
+        "item": "Authentication boundary",
+        "present": true
+      },
+      {
+        "item": "Observability (logs/metrics/tracing)",
+        "present": true
+      },
+      {
+        "item": "Distributed tracing",
+        "present": true
+      },
+      {
+        "item": "Redundancy — no single point of failure",
+        "present": true
+      },
+      {
+        "item": "Purpose-built datastores",
+        "present": true
+      }
+    ]
+  },
+  "explanation": {
+    "summary": "Ticketing Platform is 19 components across 8 tiers. Traffic enters through Web App, 3 services carry the business logic, and state lives in 5 purpose-built stores.",
+    "flows": [
+      {
+        "id": "request",
+        "title": "How a request flows",
+        "kind": "sync",
+        "note": "The synchronous path a user request takes. Everything here counts against your latency budget.",
+        "steps": [
+          {
+            "id": "web-app",
+            "label": "Web App",
+            "type": "web_app",
+            "typeLabel": "Web App",
+            "layer": "client",
+            "tech": "React",
+            "why": "User interface for customers",
+            "via": null,
+            "protocol": null
+          },
+          {
+            "id": "cdn",
+            "label": "CDN",
+            "type": "cdn",
+            "typeLabel": "CDN",
+            "layer": "edge",
+            "tech": "Cloudflare",
+            "why": "Content delivery network for static assets",
+            "via": "traffic",
+            "protocol": "sync"
+          },
+          {
+            "id": "api-gateway",
+            "label": "API Gateway",
+            "type": "api_gateway",
+            "typeLabel": "API Gateway",
+            "layer": "gateway",
+            "tech": "NGINX",
+            "why": "API entry point and authentication",
+            "via": "route",
+            "protocol": "sync"
+          },
+          {
+            "id": "concert-service",
+            "label": "Concert Service",
+            "type": "service",
+            "typeLabel": "Service",
+            "layer": "service",
+            "tech": "Node.js",
+            "why": "Manage concert information",
+            "via": "via Concert Service",
+            "protocol": "sync"
+          },
+          {
+            "id": "concert-db",
+            "label": "Concert DB",
+            "type": "sql_db",
+            "typeLabel": "SQL Database",
+            "layer": "data",
+            "tech": "PostgreSQL",
+            "why": "Store concert information",
+            "via": "Database queries",
+            "protocol": "sync"
+          }
+        ]
+      },
+      {
+        "id": "background",
+        "title": "Work that happens in the background",
+        "kind": "async",
+        "note": "Handed off to a queue so the user gets a response immediately — this work finishes afterwards.",
+        "steps": [
+          {
+            "id": "concert-service",
+            "label": "Concert Service",
+            "type": "service",
+            "typeLabel": "Service",
+            "layer": "service",
+            "tech": "Node.js",
+            "why": "Manage concert information",
+            "via": null,
+            "protocol": null
+          },
+          {
+            "id": "message-queue",
+            "label": "Message Queue",
+            "type": "message_queue",
+            "typeLabel": "Message Queue",
+            "layer": "async",
+            "tech": "RabbitMQ",
+            "why": "Asynchronous processing for notifications",
+            "via": "Notification requests",
+            "protocol": "async"
+          },
+          {
+            "id": "worker",
+            "label": "Worker",
+            "type": "worker",
+            "typeLabel": "Worker",
+            "layer": "async",
+            "tech": "Celery",
+            "why": "Process notifications and updates",
+            "via": "Notification processing",
+            "protocol": "async"
+          },
+          {
+            "id": "search-index",
+            "label": "Search Index",
+            "type": "search_index",
+            "typeLabel": "Search Index",
+            "layer": "data",
+            "tech": "Elasticsearch",
+            "why": "Full-text search for concerts and tickets",
+            "via": "Index updates",
+            "protocol": "sync"
+          }
+        ]
+      }
+    ],
+    "layers": [
+      {
+        "layer": "client",
+        "label": "Client",
+        "role": "Where people actually use the product — the apps that call your API.",
+        "components": [
+          {
+            "id": "web-app",
+            "label": "Web App",
+            "tech": "React",
+            "why": "User interface for customers"
+          },
+          {
+            "id": "mobile-app",
+            "label": "Mobile App",
+            "tech": "Flutter",
+            "why": "User interface for customers"
+          }
+        ]
+      },
+      {
+        "layer": "edge",
+        "label": "Edge / CDN",
+        "role": "The network edge. Absorbs traffic close to users, serves cached/static content, and filters abuse before it ever reaches your servers.",
+        "components": [
+          {
+            "id": "cdn",
+            "label": "CDN",
+            "tech": "Cloudflare",
+            "why": "Content delivery network for static assets"
+          }
+        ]
+      },
+      {
+        "layer": "gateway",
+        "label": "Gateway",
+        "role": "The front door. Routes each request, enforces authentication and rate limits, and spreads load across service instances.",
+        "components": [
+          {
+            "id": "load-balancer",
+            "label": "Load Balancer",
+            "tech": "HAProxy",
+            "why": "Distribute traffic across services"
+          },
+          {
+            "id": "api-gateway",
+            "label": "API Gateway",
+            "tech": "NGINX",
+            "why": "API entry point and authentication"
+          }
+        ]
+      },
+      {
+        "layer": "service",
+        "label": "Services",
+        "role": "The business logic, split by responsibility. These stay stateless so you can add instances to handle more traffic.",
+        "components": [
+          {
+            "id": "concert-service",
+            "label": "Concert Service",
+            "tech": "Node.js",
+            "why": "Manage concert information"
+          },
+          {
+            "id": "seat-reservation-service",
+            "label": "Seat Reservation Service",
+            "tech": "Go",
+            "why": "Manage seat reservations"
+          },
+          {
+            "id": "ticket-service",
+            "label": "Ticket Service",
+            "tech": "Python",
+            "why": "Manage ticket sales"
+          }
+        ]
+      },
+      {
+        "layer": "async",
+        "label": "Async / Messaging",
+        "role": "Decoupling. Queues and streams absorb spikes and move slow work off the request path, so users never wait for it.",
+        "components": [
+          {
+            "id": "message-queue",
+            "label": "Message Queue",
+            "tech": "RabbitMQ",
+            "why": "Asynchronous processing for notifications"
+          },
+          {
+            "id": "worker",
+            "label": "Worker",
+            "tech": "Celery",
+            "why": "Process notifications and updates"
+          }
+        ]
+      },
+      {
+        "layer": "data",
+        "label": "Data",
+        "role": "State. A purpose-built store per job, each owned by the service that needs it.",
+        "components": [
+          {
+            "id": "concert-db",
+            "label": "Concert DB",
+            "tech": "PostgreSQL",
+            "why": "Store concert information"
+          },
+          {
+            "id": "seat-reservation-db",
+            "label": "Seat Reservation DB",
+            "tech": "MySQL",
+            "why": "Store seat reservation information"
+          },
+          {
+            "id": "ticket-db",
+            "label": "Ticket DB",
+            "tech": "MySQL",
+            "why": "Store ticket sales information"
+          },
+          {
+            "id": "cache",
+            "label": "Cache",
+            "tech": "Redis",
+            "why": "Cache read-heavy data"
+          },
+          {
+            "id": "search-index",
+            "label": "Search Index",
+            "tech": "Elasticsearch",
+            "why": "Full-text search for concerts and tickets"
+          }
+        ]
+      },
+      {
+        "layer": "security",
+        "label": "Security / Identity",
+        "role": "The authentication boundary — who is allowed to do what.",
+        "components": [
+          {
+            "id": "auth-service",
+            "label": "Auth Service",
+            "tech": "OAuth 2.0",
+            "why": "Authentication and authorization"
+          }
+        ]
+      },
+      {
+        "layer": "observability",
+        "label": "Observability",
+        "role": "Operations. Logs, metrics and traces so you can see and debug the system in production.",
+        "components": [
+          {
+            "id": "logging",
+            "label": "Logging",
+            "tech": "ELK Stack",
+            "why": "Log collection and analysis"
+          },
+          {
+            "id": "metrics",
+            "label": "Metrics",
+            "tech": "Prometheus",
+            "why": "Performance monitoring"
+          },
+          {
+            "id": "tracing",
+            "label": "Tracing",
+            "tech": "Jaeger",
+            "why": "Distributed tracing"
+          }
+        ]
+      }
+    ],
+    "stores": [
+      {
+        "id": "concert-db",
+        "label": "Concert DB",
+        "tech": "PostgreSQL",
+        "typeLabel": "SQL Database",
+        "role": "relational data needing transactions and strong consistency",
+        "why": "Store concert information",
+        "writtenBy": [
+          "Concert Service"
+        ]
+      },
+      {
+        "id": "seat-reservation-db",
+        "label": "Seat Reservation DB",
+        "tech": "MySQL",
+        "typeLabel": "SQL Database",
+        "role": "relational data needing transactions and strong consistency",
+        "why": "Store seat reservation information",
+        "writtenBy": [
+          "Seat Reservation Service"
+        ]
+      },
+      {
+        "id": "ticket-db",
+        "label": "Ticket DB",
+        "tech": "MySQL",
+        "typeLabel": "SQL Database",
+        "role": "relational data needing transactions and strong consistency",
+        "why": "Store ticket sales information",
+        "writtenBy": [
+          "Ticket Service"
+        ]
+      },
+      {
+        "id": "cache",
+        "label": "Cache",
+        "tech": "Redis",
+        "typeLabel": "Cache",
+        "role": "hot data kept in memory to keep reads fast and take load off the database",
+        "why": "Cache read-heavy data",
+        "writtenBy": [
+          "Concert Service"
+        ]
+      },
+      {
+        "id": "search-index",
+        "label": "Search Index",
+        "tech": "Elasticsearch",
+        "typeLabel": "Search Index",
+        "role": "full-text and faceted search, which a primary database does poorly",
+        "why": "Full-text search for concerts and tickets",
+        "writtenBy": [
+          "Worker"
+        ]
+      }
+    ]
+  },
+  "capabilities": [],
+  "grounding": [],
+  "meta": {
+    "provider": "groq",
+    "complexity": 0,
+    "references": 0,
+    "candidates": 2,
+    "valid": 2,
+    "chosenScore": 108,
+    "candidateScores": [
+      108,
+      98
+    ],
+    "autofixes": 6,
+    "ms": 5345
+  }
+}
