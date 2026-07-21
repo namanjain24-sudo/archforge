@@ -16,6 +16,8 @@ import { runPipeline } from './engine/pipeline.js';
 import { assess } from './engine/assess.js';
 import { refineArchitecture } from './engine/refine.js';
 import { availableProviders } from './engine/providers.js';
+import { detectCapabilities } from './engine/capabilities.js';
+import { lookup } from './precomputed/index.js';
 import { limitModelUse } from './rateLimit.js';
 
 export const app = express();
@@ -58,6 +60,20 @@ app.post('/api/generate', limitModelUse, async (req, res) => {
   if (prompt.length < 3) return res.status(400).json({ error: 'Please describe the system you want to design.' });
   if (prompt.length > 2000) return res.status(400).json({ error: 'Prompt is too long.' });
   try {
+    // The prompts our own UI offers are pre-baked. Re-verified on the way out,
+    // so they benefit from every engine improvement while costing no tokens.
+    const baked = lookup(prompt);
+    if (baked) {
+      const result = await assess(baked.architecture, { promptText: prompt });
+      return res.json({
+        ...result,
+        prompt,
+        generatedAt: new Date().toISOString(),
+        capabilities: detectCapabilities(prompt),
+        grounding: baked.grounding || [],
+        meta: { provider: 'precomputed', ms: 0, precomputed: true },
+      });
+    }
     const result = await runPipeline(prompt, { byo: readByo(req.body) });
     res.json(result);
   } catch (e) {

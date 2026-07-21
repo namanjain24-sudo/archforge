@@ -35,11 +35,17 @@ export async function runPipeline(promptText, opts = {}) {
   // tokens-per-minute budget: at ~3K tokens per call, 2–3 parallel draws fit
   // Groq's free 12K TPM (across its two rotated keys), whereas 4 would tip over
   // and fall through to the (quota-limited) backup. Set CANDIDATES to override.
+  // ONE candidate by default. Measured on 40 cached generations
+  // (src/dev/ablation.js): 80% of the time only a single draw was even
+  // schema-valid, so best-of-N had nothing to choose between; where it did, it
+  // moved mean readiness by 0.0 and mean rank by ~1.5% — for double the tokens.
+  // The deterministic verifier already normalizes candidates to the same
+  // quality, which is exactly why the second draw stops paying for itself.
+  // Robustness is unaffected: if the single draw fails validation, the
+  // format-repair path in generate.js retries it.
   const maxRefs = Math.min(4, Math.max(2, 1 + Math.ceil(complexity / 2)));
   const envCount = Number(process.env.CANDIDATES);
-  const count = opts.count ?? (Number.isFinite(envCount) && envCount > 0
-    ? envCount
-    : (complexity >= 4 ? 3 : 2));
+  const count = opts.count ?? (Number.isFinite(envCount) && envCount > 0 ? envCount : 1);
 
   const chosen = selectReferencesForPrompt(promptText, { maxRefs });
   const references = chosen.map((r) => r.arch);
