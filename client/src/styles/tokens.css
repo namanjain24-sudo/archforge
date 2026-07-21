@@ -1,0 +1,143 @@
+/* ============================================================================
+   ArchForge — design tokens · "Precision Instrument"
+   Cool slate neutrals · clean electric-blue primary (off-violet) · warm amber
+   counterpoint · verified-green semantic. Dark-first; light is a full peer.
+   All color in OKLCH. Deliberately NOT: AI-purple, cream/sand, pure gray/black.
+   ============================================================================ */
+
+:root,
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  /* surfaces — cool slate, tinted (never pure black) */
+  --bg:            oklch(0.155 0.014 258);
+  --bg-inset:      oklch(0.135 0.014 258);   /* the diagram canvas well */
+  --surface:       oklch(0.190 0.015 258);
+  --surface-2:     oklch(0.225 0.016 258);   /* panels / toolbars */
+  --surface-hover: oklch(0.255 0.017 258);
+  --border:        oklch(0.290 0.014 258);
+  --border-strong: oklch(0.380 0.015 258);
+
+  /* ink */
+  --ink:           oklch(0.965 0.006 258);
+  --ink-muted:     oklch(0.740 0.014 258);
+  --ink-faint:     oklch(0.585 0.014 258);
+
+  /* primary — clean electric blue, hue 250 (off-violet) */
+  --primary:       oklch(0.660 0.155 250);
+  --primary-hover: oklch(0.705 0.150 250);
+  --primary-ink:   oklch(0.145 0.02 258);
+  --primary-soft:  oklch(0.660 0.155 250 / 0.14);
+  --primary-line:  oklch(0.660 0.155 250 / 0.45);
+
+  /* warm counterpoint — amber (insights / capacity) */
+  --accent:        oklch(0.800 0.130 72);
+  --accent-soft:   oklch(0.800 0.130 72 / 0.14);
+
+  /* semantic */
+  --success:       oklch(0.740 0.150 155);   /* verified / correct */
+  --success-soft:  oklch(0.740 0.150 155 / 0.14);
+  --danger:        oklch(0.680 0.185 20);    /* issue / error */
+  --danger-soft:   oklch(0.680 0.185 20 / 0.14);
+  --warning:       oklch(0.800 0.140 72);
+  --warning-soft:  oklch(0.800 0.140 72 / 0.14);
+
+  /* glow used sparingly on primary focus/brand */
+  --glow-primary:  0 0 0 1px oklch(0.660 0.155 250 / 0.35), 0 8px 30px -8px oklch(0.660 0.155 250 / 0.45);
+
+  --shadow-sm: 0 1px 2px oklch(0 0 0 / 0.4);
+  --shadow-md: 0 6px 20px -6px oklch(0 0 0 / 0.55);
+  --shadow-lg: 0 24px 60px -20px oklch(0 0 0 / 0.65);
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+
+  --bg:            oklch(0.991 0.003 258);
+  --bg-inset:      oklch(0.965 0.005 258);
+  --surface:       oklch(1.000 0.000 0);
+  --surface-2:     oklch(0.975 0.004 258);
+  --surface-hover: oklch(0.955 0.006 258);
+  --border:        oklch(0.905 0.008 258);
+  --border-strong: oklch(0.820 0.012 258);
+
+  --ink:           oklch(0.225 0.022 258);
+  --ink-muted:     oklch(0.470 0.020 258);
+  --ink-faint:     oklch(0.620 0.016 258);
+
+  --primary:       oklch(0.545 0.185 250);
+  --primary-hover: oklch(0.495 0.190 250);
+  --primary-ink:   oklch(1.000 0 0);
+  --primary-soft:  oklch(0.545 0.185 250 / 0.10);
+  --primary-line:  oklch(0.545 0.185 250 / 0.40);
+
+  --accent:        oklch(0.660 0.140 62);
+  --accent-soft:   oklch(0.660 0.140 62 / 0.12);
+
+  --success:       oklch(0.560 0.150 155);
+  --success-soft:  oklch(0.560 0.150 155 / 0.12);
+  --danger:        oklch(0.560 0.200 25);
+  --danger-soft:   oklch(0.560 0.200 25 / 0.10);
+  --warning:       oklch(0.640 0.140 62);
+  --warning-soft:  oklch(0.640 0.140 62 / 0.12);
+
+  --glow-primary:  0 0 0 1px oklch(0.545 0.185 250 / 0.25), 0 8px 24px -10px oklch(0.545 0.185 250 / 0.30);
+
+  --shadow-sm: 0 1px 2px oklch(0.2 0.02 258 / 0.06);
+  --shadow-md: 0 8px 24px -10px oklch(0.2 0.02 258 / 0.12);
+  --shadow-lg: 0 24px 60px -20px oklch(0.2 0.02 258 / 0.16);
+}
+
+/* ── Architecture LAYER colors — one considered hue per band ──────────────
+   Distinguishable, harmonized, accessible in both themes. Used by nodes,
+   the layer legend, and edge accents. */
+:root,
+:root[data-theme='dark'] {
+  --layer-client:        oklch(0.72 0.14 250);  /* blue      */
+  --layer-edge:          oklch(0.74 0.12 210);  /* sky/teal  */
+  --layer-gateway:       oklch(0.72 0.13 285);  /* indigo    */
+  --layer-service:       oklch(0.74 0.14 155);  /* green     */
+  --layer-async:         oklch(0.80 0.13 72);   /* amber     */
+  --layer-data:          oklch(0.76 0.13 30);   /* terracotta*/
+  --layer-ml:            oklch(0.74 0.13 330);  /* magenta   */
+  --layer-external:      oklch(0.72 0.05 258);  /* slate     */
+  --layer-security:      oklch(0.70 0.16 15);   /* red       */
+  --layer-observability: oklch(0.76 0.12 110);  /* lime      */
+}
+:root[data-theme='light'] {
+  --layer-client:        oklch(0.55 0.17 250);
+  --layer-edge:          oklch(0.55 0.13 210);
+  --layer-gateway:       oklch(0.52 0.16 285);
+  --layer-service:       oklch(0.52 0.15 155);
+  --layer-async:         oklch(0.60 0.14 62);
+  --layer-data:          oklch(0.56 0.16 30);
+  --layer-ml:            oklch(0.54 0.16 330);
+  --layer-external:      oklch(0.50 0.04 258);
+  --layer-security:      oklch(0.54 0.19 20);
+  --layer-observability: oklch(0.55 0.14 118);
+}
+
+/* ── non-color tokens ─────────────────────────────────────────────────── */
+:root {
+  --font-sans: 'Inter Variable', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono Variable', ui-monospace, 'SF Mono', monospace;
+
+  --radius-sm: 6px;
+  --radius:    10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);       /* out-quint */
+  --dur-fast: 130ms;
+  --dur:      200ms;
+  --dur-slow: 320ms;
+
+  /* semantic z-index scale */
+  --z-base: 1;
+  --z-sticky: 100;
+  --z-dropdown: 200;
+  --z-backdrop: 300;
+  --z-modal: 400;
+  --z-toast: 500;
+  --z-tooltip: 600;
+}

@@ -1,0 +1,24 @@
+# deps
+node_modules/
+**/node_modules/
+
+# env / secrets
+.env
+.env.local
+**/.env
+!**/.env.example
+
+# builds
+dist/
+build/
+.vercel/
+.output/
+
+# logs / os
+*.log
+npm-debug.log*
+.DS_Store
+
+# test / coverage
+coverage/
+.eval-cache/
