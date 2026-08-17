@@ -25,11 +25,11 @@ app.set('trust proxy', true); // behind Vercel/any proxy, so x-forwarded-for is 
 app.use(cors());
 app.use(express.json({ limit: '32kb' }));
 
-app.get('/api/health', (_req, res) => {
+app.get(['/api/health', '/health'], (_req, res) => {
   res.json({ ok: true, providers: availableProviders().map((p) => p.name) });
 });
 
-app.get('/api/examples', (_req, res) => {
+app.get(['/api/examples', '/examples'], (_req, res) => {
   res.json({
     examples: [
       'A scalable e-commerce platform with payments, product search and analytics',
@@ -49,7 +49,7 @@ function readByo(body) {
   return { key, provider: (body?.provider || '').toString().trim() || undefined };
 }
 
-app.post('/api/generate', limitModelUse, async (req, res) => {
+app.post(['/api/generate', '/generate'], limitModelUse, async (req, res) => {
   // Reject non-strings outright: coercing an object gives "[object Object]",
   // which is long enough to pass a length check and would burn a real
   // generation on nonsense.
@@ -82,7 +82,7 @@ app.post('/api/generate', limitModelUse, async (req, res) => {
 });
 
 // Re-verify + re-lay-out an edited architecture (no model call).
-app.post('/api/verify', async (req, res) => {
+app.post(['/api/verify', '/verify'], async (req, res) => {
   const arch = req.body?.architecture;
   if (!arch || !Array.isArray(arch.nodes)) return res.status(400).json({ error: 'An architecture is required.' });
   if (!arch.nodes.length) return res.status(400).json({ error: 'The diagram has no components to verify.' });
@@ -99,7 +99,7 @@ app.post('/api/verify', async (req, res) => {
 });
 
 // Refine an existing architecture with a natural-language instruction, then re-verify.
-app.post('/api/refine', limitModelUse, async (req, res) => {
+app.post(['/api/refine', '/refine'], limitModelUse, async (req, res) => {
   const arch = req.body?.architecture;
   const instruction = (req.body?.instruction || '').toString().trim();
   if (!arch || !Array.isArray(arch.nodes)) return res.status(400).json({ error: 'An architecture is required.' });
