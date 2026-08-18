@@ -25,8 +25,8 @@ app.set('trust proxy', true); // behind Vercel/any proxy, so x-forwarded-for is 
 app.use(cors());
 app.use(express.json({ limit: '32kb' }));
 
-app.get(['/api/health', '/health'], (_req, res) => {
-  res.json({ ok: true, providers: availableProviders().map((p) => p.name) });
+app.get(['/', '/api/health', '/health'], (_req, res) => {
+  res.json({ ok: true, message: 'ArchForge API is running', providers: availableProviders().map((p) => p.name) });
 });
 
 app.get(['/api/examples', '/examples'], (_req, res) => {

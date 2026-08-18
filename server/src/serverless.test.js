@@ -21,7 +21,7 @@ const ARCH = {
 };
 
 async function withServer(fn) {
-  const handler = (await import('../../api/[...path].js')).default;
+  const handler = (await import('../../api/index.js')).default;
   assert.equal(typeof handler, 'function', 'the Vercel entry must default-export a handler');
   const server = http.createServer((req, res) => handler(req, res));
   await new Promise((r) => server.listen(0, r));
