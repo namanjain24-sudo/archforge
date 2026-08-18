@@ -27,8 +27,10 @@ function withKey(body) {
   return apiKey ? { ...body, apiKey } : body;
 }
 
+const API_BASE = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+
 export async function generate(prompt, signal) {
-  const res = await fetch('/api/generate', {
+  const res = await fetch(`${API_BASE}/api/generate`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(withKey({ prompt })),
@@ -41,7 +43,7 @@ export async function generate(prompt, signal) {
 
 /** Re-verify + re-lay-out an edited architecture (no model call). */
 export async function reassess(architecture, prompt) {
-  const res = await fetch('/api/verify', {
+  const res = await fetch(`${API_BASE}/api/verify`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ architecture, prompt }),
@@ -53,7 +55,7 @@ export async function reassess(architecture, prompt) {
 
 /** Evolve an existing architecture with an instruction, then re-verify. */
 export async function refine(architecture, instruction, prompt) {
-  const res = await fetch('/api/refine', {
+  const res = await fetch(`${API_BASE}/api/refine`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(withKey({ architecture, instruction, prompt })),
@@ -65,7 +67,7 @@ export async function refine(architecture, instruction, prompt) {
 
 export async function fetchExamples() {
   try {
-    const res = await fetch('/api/examples');
+    const res = await fetch(`${API_BASE}/api/examples`);
     const data = await res.json();
     return data.examples || [];
   } catch {
@@ -75,7 +77,7 @@ export async function fetchExamples() {
 
 export async function fetchHealth() {
   try {
-    const res = await fetch('/api/health');
+    const res = await fetch(`${API_BASE}/api/health`);
     return await res.json();
   } catch {
     return { ok: false, providers: [] };
