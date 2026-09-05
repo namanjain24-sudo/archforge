@@ -5,6 +5,14 @@
 > *"a ride-sharing platform like Uber with driver matching, live tracking and payments"*
 > → a verified 15–20 component architecture: API gateway, matching service, geospatial index, Kafka streaming, Redis cache, trip datastore, payment gateway, realtime push, auth boundary and full observability — each with a one-line reason, capacity estimates, and a 6-pillar score.
 
+<p align="center">
+  <img src="docs/screenshot.png" alt="ArchForge — describe a system in one sentence, get a verified architecture with capacity math and a Well-Architected review" width="100%">
+</p>
+
+<p align="center">
+  <a href="https://archforge.vercel.app"><b>Try it live →</b></a>
+</p>
+
 ---
 
 ## It matches how the best actually build
