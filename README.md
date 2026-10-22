@@ -15,6 +15,8 @@
 
 ---
 
+![ArchForge demo](docs/demo.gif)
+
 ## It matches how the best actually build
 
 ArchForge is benchmarked two ways, and both run from the repo (`server/src/dev/`):
