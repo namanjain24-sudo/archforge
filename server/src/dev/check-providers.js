@@ -12,7 +12,7 @@ async function testGroqKey(key, label) {
     const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
-      body: JSON.stringify({ model: process.env.GROQ_MODEL || 'llama-3.3-70b-versatile', max_tokens: 5, messages: [{ role: 'user', content: 'reply with OK' }] }),
+      body: JSON.stringify({ model: process.env.GROQ_MODEL || 'qwen/qwen3.8-27b', max_tokens: 5, messages: [{ role: 'user', content: 'reply with OK' }] }),
     });
     const d = await r.json().catch(() => ({}));
     console.log(`${label.padEnd(12)} ${r.ok ? '✓ WORKS' : '✗ FAIL ' + r.status}  ${r.ok ? JSON.stringify(d.choices?.[0]?.message?.content) : JSON.stringify(d.error || d).slice(0, 140)}`);
@@ -22,7 +22,7 @@ async function testGroqKey(key, label) {
 
 async function testGemini(key) {
   if (!key) return console.log('Gemini       — not set');
-  const model = process.env.GEMINI_MODEL || 'gemini-flash-latest';
+  const model = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
   try {
     const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },

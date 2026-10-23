@@ -10,9 +10,9 @@
  * and deploys cleanly to serverless.
  */
 
-const GROQ_MODEL     = process.env.GROQ_MODEL     || 'llama-3.3-70b-versatile';
+const GROQ_MODEL     = process.env.GROQ_MODEL     || 'qwen/qwen3.8-27b';
 const CEREBRAS_MODEL = process.env.CEREBRAS_MODEL || 'llama-3.3-70b';
-const GEMINI_MODEL   = process.env.GEMINI_MODEL   || 'gemini-flash-latest';
+const GEMINI_MODEL   = process.env.GEMINI_MODEL   || 'gemini-2.5-flash';
 const CLAUDE_MODEL   = process.env.ANTHROPIC_MODEL || 'claude-haiku-4-5';
 
 // A terse prompt ("netflix") makes the model design a very large system, and
